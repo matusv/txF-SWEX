@@ -1,0 +1,68 @@
+[
+    {
+        "name": "action",
+        "type": "string",
+        "description": "Possible actions: placeSellOffer(sellerPK, toSellPK, price, tag), buy(buyerPK, toBuyPK), cancelOffer(forSalePK), setSigners(signers), updateFees(flatFee, percentageFee).",
+        "rule": "Required"
+    },
+    {
+        "name": "sellerPK",
+        "type": "string",
+        "description": "(action: placeSellOffer) Seller's public key to receive payment for a sold account.",
+        "rule": "Optional"
+    },
+    {
+        "name": "toSellPK",
+        "type": "string",
+        "description": "(action: placeSellOffer) Public key of an account which the seller wants to sell.",
+        "rule": "Optional"
+    },
+    {
+        "name": "price",
+        "type": "number",
+        "description": "(action: placeSellOffer) Price of the wallet.",
+        "rule": "Optional"
+    },
+    {
+        "name": "tag",
+        "type": "string",
+        "description": "(action: placeSellOffer) Tag to help with browsing wallets.",
+        "rule": "Optional"
+    },
+    {
+        "name": "buyerPK",
+        "type": "string",
+        "description": "(action: buy) Public key of buyer's wallet that pays for the purchase.",
+        "rule": "Optional"
+    },
+    {
+        "name": "toBuyPK",
+        "type": "string",
+        "description": "(action: buy) Public key of a wallet that the buyer is buying.",
+        "rule": "Optional"
+    },
+    {
+        "name": "forSalePK",
+        "type": "string",
+        "description": "(action: cancelOffer) Public key of a wallet which sell offer should be canceled.",
+        "rule": "Optional"
+    },
+    {
+        "name": "flatFee",
+        "type": "number",
+        "description": "(action: updateFees) Flat fee is used in placeSellOffer and cancelOffer.",
+        "rule": "Optional"
+    },
+    {
+        "name": "percentageFee",
+        "type": "number",
+        "description": "(action: updateFees) percentageFee is paid by the buyer from the wallet price.",
+        "rule": "Optional"
+    },
+    {
+        "name": "signers",
+        "type": "array",
+        "description": "(action: setSigners) Turret signers that control wallets while they're listed for sale.",
+        "rule": "Optional"
+    }
+]
