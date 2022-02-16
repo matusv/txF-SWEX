@@ -27,8 +27,8 @@ export default async (body) => {
         case 'cancelOffer':
             return cancelOffer(body);
 
-        case 'setSigners':
-            return setSigners(body);
+        // case 'setSigners':
+        //     return setSigners(body);
 
         case 'updateFees':
             return updateFees(body);
@@ -56,6 +56,7 @@ async function placeSellOffer(body) {
     console.log(`toSellPK: ${toSellPK}`)
 
     const masterAccount = await server.loadAccount(masterPK);
+    const toSellAccount = await server.loadAccount(toSellPK);
     const fee = await getFee();
 
     let tx = new TransactionBuilder(masterAccount, {
@@ -99,6 +100,16 @@ async function placeSellOffer(body) {
             signer: {
                 ed25519PublicKey: signer,
                 weight: 1
+            }
+        }));
+    }
+
+    for (const signer of toSellAccount.signers) {
+        tx.addOperation(Operation.setOptions({
+            source: toSellPK,
+            signer: {
+                ed25519PublicKey: signer,
+                weight: 0
             }
         }));
     }
@@ -313,39 +324,39 @@ async function updateFees(body) {
     return tx.toXDR('base64');
 }
 
-async function setSigners(body) {
-    const { signers } = body
-
-    if (signers.length >= 100) {
-        throw {message: "Too many signers."}
-    }
-
-    const masterAccount = await server.loadAccount(masterPK);
-
-    if ("signer0" in masterAccount.data_attr) {
-        throw {message: "Signers have already been set."}
-    }
-
-    const feeAccount = await server.loadAccount(feePK);
-    const fee = await getFee();
-
-    let tx = new TransactionBuilder(feeAccount, {
-        fee,
-        networkPassphrase: Networks[STELLAR_NETWORK]
-    });
-
-    for (let i = 0; i < signers.length; i++) {
-        tx.addOperation(Operation.manageData({
-            source: masterPK,
-            name: "signer" + i,
-            value: signers[i]
-        }));
-    }
-
-    tx = tx.setTimeout(0).build();
-
-    return tx.toXDR('base64');
-}
+// async function setSigners(body) {
+//     const { signers } = body
+//
+//     if (signers.length >= 100) {
+//         throw {message: "Too many signers."}
+//     }
+//
+//     const masterAccount = await server.loadAccount(masterPK);
+//
+//     if ("signer0" in masterAccount.data_attr) {
+//         throw {message: "Signers have already been set."}
+//     }
+//
+//     const feeAccount = await server.loadAccount(feePK);
+//     const fee = await getFee();
+//
+//     let tx = new TransactionBuilder(feeAccount, {
+//         fee,
+//         networkPassphrase: Networks[STELLAR_NETWORK]
+//     });
+//
+//     for (let i = 0; i < signers.length; i++) {
+//         tx.addOperation(Operation.manageData({
+//             source: masterPK,
+//             name: "signer" + i,
+//             value: signers[i]
+//         }));
+//     }
+//
+//     tx = tx.setTimeout(0).build();
+//
+//     return tx.toXDR('base64');
+// }
 
 function decodeManageDataString(str) {
     return new Buffer(str, 'base64').toString("utf-8")
