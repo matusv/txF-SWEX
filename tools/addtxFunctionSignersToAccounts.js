@@ -3,11 +3,14 @@ const { Transaction, Server, Networks, Keypair, BASE_FEE, TransactionBuilder, Op
 const HORIZON_URL = 'https://horizon-testnet.stellar.org'
 const STELLAR_NETWORK = 'TESTNET'
 
-const masterKeypair = Keypair.fromSecret("SDIN23LBBNKQPM6CXCMVE7QMRSJJPZPCGIXOVZWPS5NTQWRMD6OBMS54");
-const signerKeypair = Keypair.fromSecret("SCAI6FIQ6RUGEMWGH4AYKQSBOTNVAYTDBY74HHQBRO37QUEXWZ6PO2DG");
+const masterKeypair = Keypair.fromSecret("SCL2Y2IOQHR7SRVRWOOEP7BAAX7HNCPBX4ZZIBOPRJ3N5MOMFMQJJB4U");
+const feeKeypair = Keypair.fromSecret("SCVKQH4EOCZJKSAQGHFMY676ZA5LPNG36WQDZS7QNCSXZ6JYDYCMLTGU");
 
-const keypairs = [masterKeypair];
-const signers = [signerKeypair.publicKey()];
+const keypairs = [masterKeypair, feeKeypair];
+const signers = [
+    'GBYCLKCE3ADS6ZR3LSL2QHBCED6F6Q5QHMEVJO7JM4USSKOVLBQSQURD',
+    'GBP5NGUYLR5APT2XQ355WMWSF3EO5CUEHPLOSU5VYNXIPEUDPRTTTJPF'
+];
 
 const server = new Server(HORIZON_URL);
 
@@ -47,8 +50,6 @@ const server = new Server(HORIZON_URL);
     }
 
     transaction = transaction.setTimeout(0).build();
-
-    //transaction.sign(feeKeypair)
 
     for (const keypair of keypairs) {
         transaction.sign(keypair);

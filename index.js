@@ -6,8 +6,8 @@ const HORIZON_URL = 'https://horizon-testnet.stellar.org'
 const STELLAR_NETWORK = 'TESTNET'
 const server = new Server(HORIZON_URL);
 
-const feeKeypair = Keypair.fromSecret("SDPDWG763YQJ47M4Q4WJVNP4225E3PVCCY5QMSATPEMKPGOU6JPJR2AQ");
-const masterKeypair = Keypair.fromSecret("SDIN23LBBNKQPM6CXCMVE7QMRSJJPZPCGIXOVZWPS5NTQWRMD6OBMS54");
+const feeKeypair = Keypair.fromSecret("SCVKQH4EOCZJKSAQGHFMY676ZA5LPNG36WQDZS7QNCSXZ6JYDYCMLTGU");
+const masterKeypair = Keypair.fromSecret("SCL2Y2IOQHR7SRVRWOOEP7BAAX7HNCPBX4ZZIBOPRJ3N5MOMFMQJJB4U");
 const signerKeypair = Keypair.fromSecret("SCAI6FIQ6RUGEMWGH4AYKQSBOTNVAYTDBY74HHQBRO37QUEXWZ6PO2DG");
 
 const sellerKeypair = Keypair.fromSecret("SAZLEK3C45UULRQRH3UT2J6P5XNUWZKV3VQ3W2ASGVAFJRLNAH4CJWML");
@@ -70,7 +70,7 @@ console.log("secret:", buyerKeypair.secret());
 
             let ticketTxHash = null;
             try {
-                let txXdr = await runCancelOffer(vm, txFunctionCode)
+                let txXdr = await runPlaceSellOffer(vm, txFunctionCode)
                 txHash = await submitXDR(txXdr);
             } catch (e) {
                 console.log(e);
@@ -139,11 +139,11 @@ async function submitXDR(xdr) {
 
     let tx = new Transaction(xdr, Networks.TESTNET);
 
-    //tx.sign(masterKeypair);
+    tx.sign(masterKeypair);
     tx.sign(sellerKeypair);
-    //tx.sign(keypairToSell);
+    tx.sign(keypairToSell);
     //tx.sign(buyerKeypair);
-    tx.sign(signerKeypair);
+    //tx.sign(signerKeypair);
 
     try {
         const txResult = await server.submitTransaction(tx);

@@ -2,7 +2,7 @@
     {
         "name": "action",
         "type": "string",
-        "description": "Possible actions: placeSellOffer(sellerPK, toSellPK, price, tag), buy(buyerPK, toBuyPK), cancelOffer(forSalePK), setSigners(signers), updateFees(flatFee, percentageFee).",
+        "description": "Possible actions: placeSellOffer(sellerPK, toSellPK, price, tag), buy(buyerPK, toBuyPK), cancelOffer(forSalePK), updateFees(flatFee, percentageFee).",
         "rule": "Required"
     },
     {
@@ -57,12 +57,6 @@
         "name": "percentageFee",
         "type": "number",
         "description": "(action: updateFees) percentageFee is paid by the buyer from the wallet price.",
-        "rule": "Optional"
-    },
-    {
-        "name": "signers",
-        "type": "array",
-        "description": "(action: setSigners) Turret signers that control wallets while they're listed for sale.",
         "rule": "Optional"
     }
 ]

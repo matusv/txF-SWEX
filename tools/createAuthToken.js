@@ -3,10 +3,10 @@ const { Keypair, TransactionBuilder, Server, Account, Networks, Operation } = re
 // The hashes the fee payment can apply to
 // Note - this can be empty. Then, this key can be used to run any txFunction.
 const txFunctionHashes = [
-    'e88c5742b43236da0140b70f63df1787789d9492e1a357fbd43ef3a73698c4ab'
+    '9238ffe4834bd80a6769d5313e79ab5701961f2e8bdd9ad350ff8075956c3a4f'
 ];
 
-const feeAccountKeypair = Keypair.fromSecret('SCPWCKFZ6LKXMOK57FINGXRYLVYWPETI5L2FX37IYXOOWHVDLPRPPUP4');
+const feeAccountKeypair = Keypair.fromSecret('SCVKQH4EOCZJKSAQGHFMY676ZA5LPNG36WQDZS7QNCSXZ6JYDYCMLTGU');
 const pk = feeAccountKeypair.publicKey();
 
 //const testnet = new Server('https://horizon-testnet.stellar.org');

@@ -16,14 +16,14 @@ const inputFieldsBase64 = Buffer.from(JSON.stringify(inputFields)).toString('bas
 
 console.log("inputFieldsBase64:", inputFieldsBase64)
 
-const feeAccountKeypair = Keypair.fromSecret('SCPWCKFZ6LKXMOK57FINGXRYLVYWPETI5L2FX37IYXOOWHVDLPRPPUP4');
-console.log(console.log("feeAccount public key:", feeAccountKeypair.publicKey()));
+const feeAccountKeypair = Keypair.fromSecret('SCVKQH4EOCZJKSAQGHFMY676ZA5LPNG36WQDZS7QNCSXZ6JYDYCMLTGU');
+console.log("feeAccount public key:", feeAccountKeypair.publicKey());
 
 const server = new Server(HORIZON_URL);
 
 const turrets = [
     "https://stellar-turrets-testnet.matusv.workers.dev",
-    //"https://stellar-turrets-testnet.sdf-ecosystem.workers.dev",
+    "https://stellar-turrets-testnet.sdf-ecosystem.workers.dev",
     //"https://stellar-turrets-testnet.script3.workers.dev"
     //"https://stellar-turrets-testnet.turretsdao.workers.dev"
 ]

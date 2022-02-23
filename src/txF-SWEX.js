@@ -2,12 +2,12 @@ import { TransactionBuilder, Server, Networks, Operation, Asset } from 'stellar-
 import BigNumber from 'bignumber.js';
 
 const feePK = STELLAR_NETWORK === 'PUBLIC'
-    ? ''
-    : 'GCOEKGEWXD5CG5AWML6MJVEWND25WVUHWEPYUONSLKMUOCBYUVGBPJI2'
+    ? 'GCQQBO7PBZDNGNL7YY2NKW7B2YPLRWDA4DWJJA34LCAUTNULTEMMMMMM'
+    : 'GDOGNB6LC6DQZKOKEFZEFNDGTMMNH6W5XR7EX24E4ZJJIDS43DI7HTK7'
 
 const masterPK = STELLAR_NETWORK === 'PUBLIC'
-    ? ''
-    : 'GCAZFDBB5QZJOT36ESNEKFBU7B5C3ZDU7SB2HWKUFGGVUHHUYZZ64ZGR'
+    ? 'GCJFBXJYYLAW2FVNMYBBN2VOKKIZD6S5BCJ5VE5FQAYZ3AIVK25MSWEX'
+    : 'GC5AJARV57T544QKXERTZHI4B5NFXMIGNH7V6KX2FQW7MI3COTE43C67'
 
 const server = new Server(HORIZON_URL);
 
@@ -26,9 +26,6 @@ export default async (body) => {
 
         case 'cancelOffer':
             return cancelOffer(body);
-
-        // case 'setSigners':
-        //     return setSigners(body);
 
         case 'updateFees':
             return updateFees(body);
@@ -76,6 +73,13 @@ async function placeSellOffer(body) {
         amount: config.flatFee
     }));
 
+    tx.addOperation(Operation.payment({
+        source: feePK,
+        destination: masterPK,
+        asset: Asset.native(),
+        amount: "3"
+    }));
+
     tx.addOperation(Operation.manageData({
         source: toSellPK,
         name: "tag",
@@ -94,21 +98,24 @@ async function placeSellOffer(body) {
         value: sellerPK
     }));
 
-    for (const signer of config.signers) {
+    for (const signerPK of config.signers) {
         tx.addOperation(Operation.setOptions({
             source: toSellPK,
             signer: {
-                ed25519PublicKey: signer,
+                ed25519PublicKey: signerPK,
                 weight: 1
             }
         }));
     }
 
     for (const signer of toSellAccount.signers) {
+        if (signer.key == toSellPK)
+            continue
+
         tx.addOperation(Operation.setOptions({
             source: toSellPK,
             signer: {
-                ed25519PublicKey: signer,
+                ed25519PublicKey: signer.key,
                 weight: 0
             }
         }));
@@ -191,11 +198,11 @@ async function buy(body) {
         highThreshold: 1
     }));
 
-    for (const signer of config.signers) {
+    for (const signerPK of config.signers) {
         tx.addOperation(Operation.setOptions({
             source: toBuyPK,
             signer: {
-                ed25519PublicKey: signer,
+                ed25519PublicKey: signerPK,
                 weight: 0
             }
         }));
@@ -221,6 +228,13 @@ async function buy(body) {
         source: toBuyPK,
         name: "sellerPK",
         value: null
+    }));
+
+    tx.addOperation(Operation.payment({
+        source: masterPK,
+        destination: feePK,
+        asset: Asset.native(),
+        amount: "3"
     }));
 
     tx = tx.setTimeout(0).build();
@@ -255,12 +269,25 @@ async function cancelOffer(body) {
         amount: config.flatFee
     }));
 
+    tx.addOperation(Operation.beginSponsoringFutureReserves({
+        source: sellerPK,
+        sponsoredId: forSalePK
+    }));
+
     tx.addOperation(Operation.setOptions({
         source: forSalePK,
-        masterWeight: 1,
+        masterWeight: 0,
         lowThreshold: 1,
         medThreshold: 1,
         highThreshold: 1
+    }));
+
+    tx.addOperation(Operation.setOptions({
+        source: forSalePK,
+        signer: {
+            ed25519PublicKey: sellerPK,
+            weight: 1
+        }
     }));
 
     for (const signer of config.signers) {
@@ -272,6 +299,10 @@ async function cancelOffer(body) {
             }
         }));
     }
+
+    tx.addOperation(Operation.endSponsoringFutureReserves({
+        source: forSalePK
+    }));
 
     tx.addOperation(Operation.manageData({
         source: forSalePK,
@@ -289,6 +320,13 @@ async function cancelOffer(body) {
         source: forSalePK,
         name: "sellerPK",
         value: null
+    }));
+
+    tx.addOperation(Operation.payment({
+        source: masterPK,
+        destination: feePK,
+        asset: Asset.native(),
+        amount: "3"
     }));
 
     tx = tx.setTimeout(0).build();
@@ -324,40 +362,6 @@ async function updateFees(body) {
     return tx.toXDR('base64');
 }
 
-// async function setSigners(body) {
-//     const { signers } = body
-//
-//     if (signers.length >= 100) {
-//         throw {message: "Too many signers."}
-//     }
-//
-//     const masterAccount = await server.loadAccount(masterPK);
-//
-//     if ("signer0" in masterAccount.data_attr) {
-//         throw {message: "Signers have already been set."}
-//     }
-//
-//     const feeAccount = await server.loadAccount(feePK);
-//     const fee = await getFee();
-//
-//     let tx = new TransactionBuilder(feeAccount, {
-//         fee,
-//         networkPassphrase: Networks[STELLAR_NETWORK]
-//     });
-//
-//     for (let i = 0; i < signers.length; i++) {
-//         tx.addOperation(Operation.manageData({
-//             source: masterPK,
-//             name: "signer" + i,
-//             value: signers[i]
-//         }));
-//     }
-//
-//     tx = tx.setTimeout(0).build();
-//
-//     return tx.toXDR('base64');
-// }
-
 function decodeManageDataString(str) {
     return new Buffer(str, 'base64').toString("utf-8")
 }
@@ -379,20 +383,22 @@ async function getConfig() {
     const masterAccount = await server.loadAccount(masterPK);
 
     let signers = [];
-    for (const [key, value] of Object.entries(masterAccount.data_attr)) {
-        if (key.startsWith("signer")) {
-            signers.push(decodeManageDataString(value));
-        }
+    for (const signer of masterAccount.signers) {
+        if (signer.key == masterPK)
+            continue
+
+        signers.push(signer.key);
     }
 
     if (signers.length == 0)
-        throw {message: "Signers not initialized."}
+        throw {message: "Signers are not set."}
 
     const config = {
         flatFee: decodeManageDataString(masterAccount.data_attr.flatFee),
         percentageFee: decodeManageDataString(masterAccount.data_attr.percentageFee),
         signers: signers
     }
+
     return config
 }
 
